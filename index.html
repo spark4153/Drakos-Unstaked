@@ -1,26 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drakos Unstaked</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drakos Unstaked</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <!-- Solana Web3.js Library laden -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    
+    <!-- Dein Script laden -->
+    <script src="script.js" defer></script>
 </head>
 <body>
 
-  <header>
-    <h1>Drakos Unstaked</h1>
-    <button id="connectWalletButton">Connect Wallet</button>
-    <div id="walletAddress"></div>
-  </header>
+    <header>
+        <h1>Drakos Unstaked</h1>
+        <button id="connectWalletButton">Wallet verbinden</button>
+        <p id="walletAddress"></p>
+    </header>
 
-  <div id="spinner" class="spinner" style="display:none;"></div>
+    <main>
+        <div id="spinner" class="spinner" style="display: none;"></div>
+        <div id="nfts" class="nfts-container"></div>
+    </main>
 
-  <main>
-    <div id="nfts" class="nfts-container"></div>
-  </main>
-
-  <script src="script.js"></script>
 </body>
 </html>
