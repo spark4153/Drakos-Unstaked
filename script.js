@@ -46,10 +46,11 @@ async function loadNFTs() {
         for (const acc of nftAccounts) {
             const mint = acc.account.data.parsed.info.mint;
             const metadataPDA = await solanaWeb3.PublicKey.findProgramAddress([
-                Buffer.from('metadata'),
+                new TextEncoder().encode('metadata'),
                 new solanaWeb3.PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s').toBuffer(),
                 new solanaWeb3.PublicKey(mint).toBuffer()
             ], new solanaWeb3.PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'));
+
 
             const accountInfo = await connection.getAccountInfo(metadataPDA[0]);
             if (!accountInfo) continue;
