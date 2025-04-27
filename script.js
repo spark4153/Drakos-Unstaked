@@ -1,5 +1,3 @@
-// Neues sauberes script.js mit richtiger Metadaten-Ladung via Helius
-
 console.log('[DEBUG] Script loaded');
 
 const connection = new solanaWeb3.Connection('https://rpc.helius.xyz/?api-key=d65ddae8-9307-4e20-ac42-50858a29044d', 'confirmed');
@@ -107,21 +105,16 @@ async function unstakeNFT(mint) {
     try {
         const transaction = new solanaWeb3.Transaction();
 
-        const sourceATA = await solanaWeb3.getAssociatedTokenAddress(
-            new solanaWeb3.PublicKey(mint),
-            vaultAddress
-        );
-
-        const destinationATA = await solanaWeb3.getAssociatedTokenAddress(
-            new solanaWeb3.PublicKey(mint),
-            wallet.publicKey
-        );
+        const sourceATA = await findAssociatedTokenAddress(vaultAddress, new solanaWeb3.PublicKey(mint));
+        const destinationATA = await findAssociatedTokenAddress(wallet.publicKey, new solanaWeb3.PublicKey(mint));
 
         transaction.add(
-            solanaWeb3.createTransferInstruction(
+            solanaWeb3.Token.createTransferInstruction(
+                solanaWeb3.TOKEN_PROGRAM_ID,
                 sourceATA,
                 destinationATA,
                 vaultAddress,
+                [],
                 1
             )
         );
@@ -140,4 +133,15 @@ async function unstakeNFT(mint) {
         console.error('[DEBUG] Fehler beim Unstaking:', err);
         alert('❌ Fehler beim Unstaking');
     }
+}
+
+async function findAssociatedTokenAddress(walletAddress, tokenMintAddress) {
+    return (await solanaWeb3.PublicKey.findProgramAddress(
+        [
+            walletAddress.toBuffer(),
+            solanaWeb3.TOKEN_PROGRAM_ID.toBuffer(),
+            tokenMintAddress.toBuffer(),
+        ],
+        new solanaWeb3.PublicKey("ATokenGPvbdGVxr1L76hv5wGmEddczG1YVwH8it1Vp2K")
+    ))[0];
 }
