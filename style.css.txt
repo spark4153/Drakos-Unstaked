@@ -1,0 +1,73 @@
+body {
+  background-color: #111;
+  color: #eee;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+.container {
+  max-width: 800px;
+  margin: auto;
+}
+.logo {
+  width: 120px;
+  margin: 20px auto;
+  display: block;
+}
+button {
+  background-color: #444;
+  color: #eee;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 8px;
+}
+button:hover {
+  background-color: #666;
+}
+.hidden {
+  display: none;
+}
+.ledger-notice {
+  font-size: 0.9em;
+  color: #ccc;
+  margin-bottom: 20px;
+}
+#nftList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+.nft-item {
+  background-color: #222;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 10px;
+  width: 150px;
+}
+.nft-item img {
+  width: 100%;
+  border-radius: 8px;
+}
+.spinner {
+  border: 5px solid #444;
+  border-top: 5px solid #eee;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: auto;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+footer {
+  margin-top: 40px;
+  font-size: 0.8em;
+  color: #555;
+}
