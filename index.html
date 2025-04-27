@@ -4,39 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drakos Unstaked</title>
-
-    <!-- Favicon (Logo) -->
-    <link rel="icon" type="image/png" href="logo.png">
-
-    <!-- Style CSS -->
     <link rel="stylesheet" href="style.css">
-
-    <!-- Solana Web3.js -->
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
-    <div id="loadingSpinner" class="spinner-overlay" style="display: none;">
-        <div class="spinner"></div>
-    </div>
 
     <header>
-        <img src="logo.png" alt="Drakos Logo" id="logo">
+        <img id="logo" src="logo.png" alt="Drakos Logo">
         <h1>Drakos Unstaked</h1>
-        <p class="subtitle">Official Recovery Portal - Only for Unstaking NFTs</p>
+        <p class="subtitle">Retrieve your NFTs from the Vault</p>
     </header>
 
     <main>
         <button id="connectWalletBtn">Connect Wallet</button>
-        <div id="nftContainer" class="nft-container"></div>
+
+        <div id="spinner" class="spinner-overlay" style="display:none;">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="nft-container" id="nftContainer"></div>
     </main>
 
-    <!-- Script wartet, bis alles geladen ist -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const script = document.createElement('script');
-            script.src = 'script.js';
-            document.body.appendChild(script);
-        });
-    </script>
+    <!-- Script immer am Ende -->
+    <script src="script.js"></script>
+
 </body>
 </html>
