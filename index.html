@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drakos Unchained – Unstaking Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+</head>
+<body>
+  <div class="container">
+    <img src="assets/logo.png" alt="Drakos Logo" class="logo">
+    <h1>Unstaking Portal Only</h1>
+    <p>This website is exclusively for unstaking NFTs from the vault. No new staking actions are possible.</p>
+    <p class="ledger-notice">Ledger Notice: Please confirm each transaction manually on your Ledger device after initiating an unstake.</p>
+    <button id="connectWallet">Connect Wallet</button>
+
+    <div id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>Loading your NFTs from the vault...</p>
+    </div>
+
+    <div id="nftSection" class="hidden">
+      <h2>Your Staked NFTs</h2>
+      <div id="nftList"></div>
+      <button id="unstakeAll" class="hidden">Unstake All</button>
+    </div>
+
+    <footer>
+      <p class="disclaimer">
+        Disclaimer: This portal is community-maintained and not officially affiliated with the original project. Use at your own risk.
+      </p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
