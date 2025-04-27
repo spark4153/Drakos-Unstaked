@@ -10,13 +10,13 @@ window.addEventListener('load', () => {
     if ('solana' in window) {
         wallet = window.solana;
         if (wallet.isPhantom) {
-            console.log('[DEBUG] Phantom wallet gefunden');
+            console.log('[DEBUG] Phantom wallet found');
             document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
         } else {
-            alert('Bitte installiere die Phantom Wallet!');
+            alert('Please install Phantom Wallet!');
         }
     } else {
-        alert('Bitte installiere die Phantom Wallet!');
+        alert('Please install Phantom Wallet!');
     }
 });
 
@@ -27,12 +27,12 @@ async function connectWallet() {
         document.getElementById('walletAddress').innerText = 'Wallet: ' + resp.publicKey.toString();
         loadNFTs();
     } catch (err) {
-        console.error('[DEBUG] Wallet Verbindung fehlgeschlagen:', err);
+        console.error('[DEBUG] wallect connection failed:', err);
     }
 }
 
 async function loadNFTs() {
-    console.log('[DEBUG] Lade NFTs...');
+    console.log('[DEBUG] Load NFTs...');
     document.getElementById('spinner').style.display = 'block';
     const nftsContainer = document.getElementById('nfts');
     nftsContainer.innerHTML = '';
@@ -41,7 +41,7 @@ async function loadNFTs() {
         const accounts = await connection.getParsedTokenAccountsByOwner(vaultAddress, { programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') });
         const nftAccounts = accounts.value.filter(account => account.account.data.parsed.info.tokenAmount.amount === "1");
 
-        console.log('[DEBUG] NFTs gefunden:', nftAccounts.length);
+        console.log('[DEBUG] NFTs found:', nftAccounts.length);
 
         for (const acc of nftAccounts) {
             const mint = acc.account.data.parsed.info.mint;
@@ -80,14 +80,14 @@ async function loadNFTs() {
             nftsContainer.appendChild(nftDiv);
         }
     } catch (error) {
-        console.error('[DEBUG] Fehler beim Laden der NFTs:', error);
+        console.error('[DEBUG] Error loading NFTs:', error);
     }
 
     document.getElementById('spinner').style.display = 'none';
 }
 
 async function unstakeNFT(mint) {
-    console.log('[DEBUG] Starte Unstaking für:', mint);
+    console.log('[DEBUG] start unstaking for:', mint);
 
     try {
         const transaction = new solanaWeb3.Transaction();
@@ -126,10 +126,10 @@ async function unstakeNFT(mint) {
 
         await connection.confirmTransaction(txid);
 
-        alert('Unstaking erfolgreich! ✅ Transaction ID: ' + txid);
+        alert('Unstaking successfully! ✅ Transaction ID: ' + txid);
     } catch (error) {
-        console.error('[DEBUG] Fehler beim Unstaking:', error);
-        alert('Unstaking fehlgeschlagen ❌');
+        console.error('[DEBUG] error while unstaking:', error);
+        alert('unstaking failed ❌');
     }
 }
 
