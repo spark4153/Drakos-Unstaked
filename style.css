@@ -1,105 +1,98 @@
-/* Style fuer Drakos Unstaked */
+/* style.css */
 
+/* Grundstil */
 body {
   margin: 0;
+  padding: 0;
   font-family: Arial, sans-serif;
-  background-color: #0d0d0d;
-  color: #f0f0f0;
-}
-
-header {
+  background-color: #111;
+  color: #eee;
   text-align: center;
-  padding: 2rem 1rem;
 }
 
-h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+/* Header */
+header {
+  background-color: #222;
+  padding: 20px 0;
 }
 
-#connectWalletButton {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  background-color: #8c52ff;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
+header h1 {
+  margin: 0;
+  font-size: 2em;
+  letter-spacing: 1px;
 }
 
-#connectWalletButton:hover {
-  background-color: #7a45e5;
+/* Wallet Section */
+.wallet-section {
+  margin: 20px 0;
 }
 
 #walletAddress {
-  margin-top: 1rem;
+  margin-top: 10px;
   font-size: 1rem;
-  color: #aaaaaa;
+  word-break: break-word;
 }
 
-main {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  padding: 2rem;
+/* Button Style */
+button {
+  background-color: #ff6600;
+  border: none;
+  padding: 10px 20px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s;
 }
 
-.nfts-container {
+button:hover {
+  background-color: #ff3300;
+}
+
+/* Spinner */
+.spinner {
+  margin: 20px auto;
+  width: 50px;
+  height: 50px;
+  border: 6px solid #ccc;
+  border-top: 6px solid #ff6600;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* NFT Container */
+.nft-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
   justify-content: center;
+  margin: 20px;
 }
 
 .nft {
-  background: #1c1c1c;
+  background-color: #222;
   border: 1px solid #333;
   border-radius: 12px;
-  padding: 1rem;
-  width: 200px;
-  text-align: center;
+  margin: 10px;
+  padding: 15px;
+  width: 180px;
+  box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .nft img {
   width: 100%;
+  height: auto;
   border-radius: 8px;
-  margin-bottom: 0.5rem;
 }
 
 .nft p {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-}
-
-.nft button {
-  padding: 0.5rem 1rem;
-  background-color: #ff4d4d;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-}
-
-.nft button:hover {
-  background-color: #e64545;
-}
-
-#spinner {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 50px;
-  height: 50px;
-  margin: -25px 0 0 -25px;
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #8c52ff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  z-index: 1000;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  margin: 10px 0;
+  font-size: 0.9rem;
+  word-break: break-word;
 }
