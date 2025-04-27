@@ -1,147 +1,124 @@
-console.log('[DEBUG] Script loaded');
+// script.js
 
-const connection = new solanaWeb3.Connection('https://rpc.helius.xyz/?api-key=d65ddae8-9307-4e20-ac42-50858a29044d', 'confirmed');
-const vaultAddress = new solanaWeb3.PublicKey('BH7Ed5FmftjGczdKgVprDFHHj3vY3bWDUJzMEGFiRo2H');
+console.log("[DEBUG] Script loaded");
+
+// Globale Variablen
 let wallet = null;
 
-window.addEventListener('load', () => {
-    if ('solana' in window) {
-        wallet = window.solana;
-        if (wallet.isPhantom) {
-            console.log('[DEBUG] Phantom wallet found');
-            document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
-        } else {
-            alert('Bitte installiere Phantom Wallet!');
-        }
-    } else {
-        alert('Bitte installiere Phantom Wallet!');
-    }
-});
-
+// Phantom Wallet verbinden
 async function connectWallet() {
     try {
-        const resp = await wallet.connect();
-        console.log('[DEBUG] Wallet connected:', resp.publicKey.toString());
-        document.getElementById('walletAddress').innerText = 'Wallet: ' + resp.publicKey.toString();
-        loadNFTs();
-    } catch (err) {
-        console.error('[DEBUG] Wallet connection failed:', err);
-    }
-}
+        const provider = window.solana;
 
-async function loadNFTs() {
-    console.log('[DEBUG] Lade NFTs...');
-    document.getElementById('spinner').style.display = 'block';
-    const nftsContainer = document.getElementById('nfts');
-    nftsContainer.innerHTML = '';
-
-    try {
-        const accounts = await connection.getParsedTokenAccountsByOwner(vaultAddress, {
-            programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
-        });
-
-        const nftMints = accounts.value
-            .filter(acc => acc.account.data.parsed.info.tokenAmount.amount === '1')
-            .map(acc => acc.account.data.parsed.info.mint);
-
-        console.log('[DEBUG] NFTs gefunden:', nftMints.length);
-
-        for (const mint of nftMints) {
-            const metadataUri = await fetchMetadataUri(mint);
-            if (!metadataUri) continue;
-
-            const response = await fetch(metadataUri);
-            const metadata = await response.json();
-
-            const nftDiv = document.createElement('div');
-            nftDiv.className = 'nft';
-
-            const img = document.createElement('img');
-            img.src = metadata.image;
-            img.alt = metadata.name;
-
-            const name = document.createElement('p');
-            name.innerText = metadata.name;
-
-            const button = document.createElement('button');
-            button.innerText = 'Unstake';
-            button.onclick = () => unstakeNFT(mint);
-
-            nftDiv.appendChild(img);
-            nftDiv.appendChild(name);
-            nftDiv.appendChild(button);
-            nftsContainer.appendChild(nftDiv);
+        if (!provider?.isPhantom) {
+            alert("Bitte Phantom Wallet installieren.");
+            return;
         }
-    } catch (err) {
-        console.error('[DEBUG] Fehler beim Laden der NFTs:', err);
-    }
 
-    document.getElementById('spinner').style.display = 'none';
+        console.log("[DEBUG] Phantom wallet gefunden");
+
+        const resp = await provider.connect();
+        wallet = resp.publicKey;
+
+        console.log("[DEBUG] Wallet connected:", wallet.toString());
+        document.getElementById('walletAddress').innerText = wallet.toString();
+
+        await loadNFTs();
+    } catch (err) {
+        console.error("[DEBUG] Fehler beim Verbinden der Wallet:", err);
+    }
 }
 
-async function fetchMetadataUri(mint) {
+// NFTs laden
+async function loadNFTs() {
     try {
-        const response = await fetch('https://rpc.helius.xyz/?api-key=d65ddae8-9307-4e20-ac42-50858a29044d', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'getAsset',
-                params: { id: mint }
-            })
+        console.log("[DEBUG] Lade NFTs...");
+
+        const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d65ddae8-9307-4e20-ac42-50858a29044d");
+
+        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(wallet, {
+            programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
         });
 
-        const data = await response.json();
-        return data.result?.content?.json_uri || null;
-    } catch (err) {
-        console.error('[DEBUG] Fehler beim Abrufen des Metadata URI:', err);
-        return null;
+        console.log("[DEBUG] Token Accounts fetched:", tokenAccounts);
+
+        const nftAccounts = tokenAccounts.value.filter(account => {
+            return account.account.data.parsed.info.tokenAmount.amount === "1" && account.account.data.parsed.info.tokenAmount.decimals === 0;
+        });
+
+        console.log("[DEBUG] NFTs gefunden:", nftAccounts.length);
+
+        const nftContainer = document.getElementById("nfts");
+        nftContainer.innerHTML = "";
+
+        nftAccounts.forEach((nftAccount) => {
+            const mintAddress = nftAccount.account.data.parsed.info.mint;
+            const div = document.createElement("div");
+            div.className = "nft";
+            div.innerHTML = `
+                <p>${mintAddress}</p>
+                <button onclick="unstakeNFT('${mintAddress}')">Unstake</button>
+            `;
+            nftContainer.appendChild(div);
+        });
+
+    } catch (error) {
+        console.error("[DEBUG] Fehler beim Laden der NFTs:", error);
     }
 }
 
-async function unstakeNFT(mint) {
-    console.log('[DEBUG] Starte Unstaking für:', mint);
+// Unstake Funktion
+async function unstakeNFT(mintAddress) {
     try {
-        const transaction = new solanaWeb3.Transaction();
+        console.log("[DEBUG] Starte Unstaking für:", mintAddress);
 
-        const sourceATA = await findAssociatedTokenAddress(vaultAddress, new solanaWeb3.PublicKey(mint));
-        const destinationATA = await findAssociatedTokenAddress(wallet.publicKey, new solanaWeb3.PublicKey(mint));
+        const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d65ddae8-9307-4e20-ac42-50858a29044d");
 
-        transaction.add(
+        const fromTokenAccount = await solanaWeb3.getAssociatedTokenAddress(
+            new solanaWeb3.PublicKey(mintAddress),
+            wallet
+        );
+
+        const destinationAccount = await solanaWeb3.getAssociatedTokenAddress(
+            new solanaWeb3.PublicKey(mintAddress),
+            wallet
+        );
+
+        const transaction = new solanaWeb3.Transaction().add(
             solanaWeb3.Token.createTransferInstruction(
                 solanaWeb3.TOKEN_PROGRAM_ID,
-                sourceATA,
-                destinationATA,
-                vaultAddress,
+                fromTokenAccount,
+                destinationAccount,
+                wallet,
                 [],
                 1
             )
         );
 
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = wallet.publicKey;
+        transaction.feePayer = wallet;
+        let blockhashObj = await connection.getRecentBlockhash();
+        transaction.recentBlockhash = blockhashObj.blockhash;
 
-        const signed = await wallet.signTransaction(transaction);
-        const txid = await connection.sendRawTransaction(signed.serialize());
+        const signed = await window.solana.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(signed.serialize());
 
-        await connection.confirmTransaction(txid);
-        alert('✅ Unstaking erfolgreich! TX: ' + txid);
+        await connection.confirmTransaction(signature);
 
-    } catch (err) {
-        console.error('[DEBUG] Fehler beim Unstaking:', err);
-        alert('❌ Fehler beim Unstaking');
+        alert("NFT erfolgreich unstaked!");
+        console.log("[DEBUG] NFT erfolgreich unstaked:", signature);
+
+        await loadNFTs();
+
+    } catch (error) {
+        console.error("[DEBUG] Fehler beim Unstaking:", error);
+        alert("Fehler beim Unstaking. Siehe Konsole.");
     }
 }
 
-async function findAssociatedTokenAddress(walletAddress, tokenMintAddress) {
-    return (await solanaWeb3.PublicKey.findProgramAddress(
-        [
-            walletAddress.toBuffer(),
-            solanaWeb3.TOKEN_PROGRAM_ID.toBuffer(),
-            tokenMintAddress.toBuffer(),
-        ],
-        new solanaWeb3.PublicKey("ATokenGPvbdGVxr1L76hv5wGmEddczG1YVwH8it1Vp2K")
-    ))[0];
-}
+// Wallet Connect Button Listener
+window.addEventListener("load", () => {
+    const connectWalletButton = document.getElementById("connectWalletButton");
+    if (connectWalletButton) {
+        connectWalletButton.addEventListener("click", connectWallet);
+    }
+});
