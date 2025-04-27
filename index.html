@@ -30,7 +30,13 @@
         <div id="nftContainer" class="nft-container"></div>
     </main>
 
-    <!-- Your Script -->
-    <script src="script.js"></script>
+    <!-- Script wartet, bis alles geladen ist -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const script = document.createElement('script');
+            script.src = 'script.js';
+            document.body.appendChild(script);
+        });
+    </script>
 </body>
 </html>
