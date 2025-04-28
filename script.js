@@ -1,17 +1,18 @@
-// script.js
+// Neues Spezial-Script für Vault NFTs unstaken
 
-console.log("[DEBUG] Script loaded");
+console.log("[DEBUG] Vault Unstake Script loaded");
 
-// Globale Variablen
 let wallet = null;
 
-// Phantom Wallet verbinden
+const VAULT_ADDRESS = "BH7Ed5FmftjGczdKgVprDFHHj3vY3bWDUJzMEGFiRo2H";
+const RPC_ENDPOINT = "https://rpc.helius.xyz/?api-key=d65ddae8-9307-4e20-ac42-50858a29044d";
+
 async function connectWallet() {
     try {
         const provider = window.solana;
 
         if (!provider?.isPhantom) {
-            alert("Bitte Phantom Wallet installieren.");
+            alert("Bitte Phantom Wallet installieren!");
             return;
         }
 
@@ -23,30 +24,31 @@ async function connectWallet() {
         console.log("[DEBUG] Wallet connected:", wallet.toString());
         document.getElementById('walletAddress').innerText = wallet.toString();
 
-        await loadNFTs();
+        await loadVaultNFTs();
     } catch (err) {
         console.error("[DEBUG] Fehler beim Verbinden der Wallet:", err);
     }
 }
 
-// NFTs laden
-async function loadNFTs() {
+async function loadVaultNFTs() {
     try {
-        console.log("[DEBUG] Lade NFTs...");
+        console.log("[DEBUG] Lade NFTs aus Vault...");
 
-        const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d65ddae8-9307-4e20-ac42-50858a29044d");
+        const connection = new solanaWeb3.Connection(RPC_ENDPOINT);
 
-        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(wallet, {
-            programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-        });
+        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+            new solanaWeb3.PublicKey(VAULT_ADDRESS),
+            { programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") }
+        );
 
-        console.log("[DEBUG] Token Accounts fetched:", tokenAccounts);
+        console.log("[DEBUG] Vault Token Accounts fetched:", tokenAccounts);
 
         const nftAccounts = tokenAccounts.value.filter(account => {
-            return account.account.data.parsed.info.tokenAmount.amount === "1" && account.account.data.parsed.info.tokenAmount.decimals === 0;
+            const amount = account.account.data.parsed.info.tokenAmount;
+            return amount.amount === "1" && amount.decimals === 0;
         });
 
-        console.log("[DEBUG] NFTs gefunden:", nftAccounts.length);
+        console.log("[DEBUG] NFTs gefunden im Vault:", nftAccounts.length);
 
         const nftContainer = document.getElementById("nfts");
         nftContainer.innerHTML = "";
@@ -61,53 +63,52 @@ async function loadNFTs() {
             `;
             nftContainer.appendChild(div);
         });
-
     } catch (error) {
-        console.error("[DEBUG] Fehler beim Laden der NFTs:", error);
+        console.error("[DEBUG] Fehler beim Laden der Vault NFTs:", error);
     }
 }
 
-// Unstake Funktion
 async function unstakeNFT(mintAddress) {
     try {
         console.log("[DEBUG] Starte Unstaking für:", mintAddress);
 
-        const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d65ddae8-9307-4e20-ac42-50858a29044d");
+        const connection = new solanaWeb3.Connection(RPC_ENDPOINT);
 
-        const fromTokenAccount = await solanaWeb3.getAssociatedTokenAddress(
+        const sourceTokenAccount = await solanaWeb3.getAssociatedTokenAddress(
             new solanaWeb3.PublicKey(mintAddress),
-            wallet
+            new solanaWeb3.PublicKey(VAULT_ADDRESS),
+            true
         );
 
-        const destinationAccount = await solanaWeb3.getAssociatedTokenAddress(
+        const destinationTokenAccount = await solanaWeb3.getAssociatedTokenAddress(
             new solanaWeb3.PublicKey(mintAddress),
             wallet
         );
 
         const transaction = new solanaWeb3.Transaction().add(
-            solanaWeb3.Token.createTransferInstruction(
-                solanaWeb3.TOKEN_PROGRAM_ID,
-                fromTokenAccount,
-                destinationAccount,
-                wallet,
+            solanaWeb3.createTransferInstruction(
+                sourceTokenAccount,
+                destinationTokenAccount,
+                new solanaWeb3.PublicKey(VAULT_ADDRESS),
+                1,
                 [],
-                1
+                solanaWeb3.TOKEN_PROGRAM_ID
             )
         );
 
         transaction.feePayer = wallet;
-        let blockhashObj = await connection.getRecentBlockhash();
-        transaction.recentBlockhash = blockhashObj.blockhash;
+        const blockhash = await connection.getRecentBlockhash();
+        transaction.recentBlockhash = blockhash.blockhash;
 
-        const signed = await window.solana.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signed.serialize());
+        const signedTx = await window.solana.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(signedTx.serialize());
 
         await connection.confirmTransaction(signature);
 
-        alert("NFT erfolgreich unstaked!");
+        alert("✅ NFT erfolgreich unstaked!");
         console.log("[DEBUG] NFT erfolgreich unstaked:", signature);
 
-        await loadNFTs();
+        await loadVaultNFTs();
 
     } catch (error) {
         console.error("[DEBUG] Fehler beim Unstaking:", error);
@@ -115,7 +116,7 @@ async function unstakeNFT(mintAddress) {
     }
 }
 
-// Wallet Connect Button Listener
+// Listener
 window.addEventListener("load", () => {
     const connectWalletButton = document.getElementById("connectWalletButton");
     if (connectWalletButton) {
