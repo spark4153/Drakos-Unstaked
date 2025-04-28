@@ -1,4 +1,4 @@
-// Neues Spezial-Script für Vault NFTs unstaken
+// Vollständiges Script für Vault Unstaking mit korrektem unstakeNFT Fix
 
 console.log("[DEBUG] Vault Unstake Script loaded");
 
@@ -77,7 +77,7 @@ async function unstakeNFT(mintAddress) {
         const mintPublicKey = new solanaWeb3.PublicKey(mintAddress);
         const vaultPublicKey = new solanaWeb3.PublicKey(VAULT_ADDRESS);
 
-        // PDA Source Account: Vault ATA
+        // Source Token Account im Vault
         const [sourceTokenAccount] = await solanaWeb3.PublicKey.findProgramAddress(
             [
                 vaultPublicKey.toBuffer(),
@@ -87,7 +87,7 @@ async function unstakeNFT(mintAddress) {
             new solanaWeb3.PublicKey("ATokenGPvbdGVxr1ZpzZbNwG9wL6b9WzfrWkbsAU6Y7")
         );
 
-        // PDA Destination Account: User Wallet ATA
+        // Destination Token Account für User Wallet
         const [destinationTokenAccount] = await solanaWeb3.PublicKey.findProgramAddress(
             [
                 wallet.toBuffer(),
@@ -117,28 +117,6 @@ async function unstakeNFT(mintAddress) {
 
         const signed = await window.solana.signTransaction(transaction);
         const signature = await connection.sendRawTransaction(signed.serialize());
-
-        await connection.confirmTransaction(signature);
-
-        alert("✅ NFT erfolgreich unstaked!");
-        console.log("[DEBUG] NFT erfolgreich unstaked:", signature);
-
-        await loadVaultNFTs();
-
-    } catch (error) {
-        console.error("[DEBUG] Fehler beim Unstaking:", error);
-        alert("Fehler beim Unstaking. Siehe Konsole.");
-    }
-}
-
-        );
-
-        transaction.feePayer = wallet;
-        const blockhash = await connection.getRecentBlockhash();
-        transaction.recentBlockhash = blockhash.blockhash;
-
-        const signedTx = await window.solana.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signedTx.serialize());
 
         await connection.confirmTransaction(signature);
 
