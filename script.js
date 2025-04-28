@@ -74,26 +74,63 @@ async function unstakeNFT(mintAddress) {
 
         const connection = new solanaWeb3.Connection(RPC_ENDPOINT);
 
-        const sourceTokenAccount = await solanaWeb3.getAssociatedTokenAddress(
-            new solanaWeb3.PublicKey(mintAddress),
-            new solanaWeb3.PublicKey(VAULT_ADDRESS),
-            true
+        const mintPublicKey = new solanaWeb3.PublicKey(mintAddress);
+        const vaultPublicKey = new solanaWeb3.PublicKey(VAULT_ADDRESS);
+
+        // PDA Source Account: Vault ATA
+        const [sourceTokenAccount] = await solanaWeb3.PublicKey.findProgramAddress(
+            [
+                vaultPublicKey.toBuffer(),
+                solanaWeb3.TOKEN_PROGRAM_ID.toBuffer(),
+                mintPublicKey.toBuffer()
+            ],
+            new solanaWeb3.PublicKey("ATokenGPvbdGVxr1ZpzZbNwG9wL6b9WzfrWkbsAU6Y7")
         );
 
-        const destinationTokenAccount = await solanaWeb3.getAssociatedTokenAddress(
-            new solanaWeb3.PublicKey(mintAddress),
-            wallet
+        // PDA Destination Account: User Wallet ATA
+        const [destinationTokenAccount] = await solanaWeb3.PublicKey.findProgramAddress(
+            [
+                wallet.toBuffer(),
+                solanaWeb3.TOKEN_PROGRAM_ID.toBuffer(),
+                mintPublicKey.toBuffer()
+            ],
+            new solanaWeb3.PublicKey("ATokenGPvbdGVxr1ZpzZbNwG9wL6b9WzfrWkbsAU6Y7")
         );
+
+        console.log("[DEBUG] Source Account:", sourceTokenAccount.toBase58());
+        console.log("[DEBUG] Destination Account:", destinationTokenAccount.toBase58());
 
         const transaction = new solanaWeb3.Transaction().add(
-            solanaWeb3.createTransferInstruction(
+            solanaWeb3.Token.createTransferInstruction(
+                solanaWeb3.TOKEN_PROGRAM_ID,
                 sourceTokenAccount,
                 destinationTokenAccount,
-                new solanaWeb3.PublicKey(VAULT_ADDRESS),
-                1,
+                vaultPublicKey,
                 [],
-                solanaWeb3.TOKEN_PROGRAM_ID
+                1
             )
+        );
+
+        transaction.feePayer = wallet;
+        const { blockhash } = await connection.getRecentBlockhash();
+        transaction.recentBlockhash = blockhash;
+
+        const signed = await window.solana.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(signed.serialize());
+
+        await connection.confirmTransaction(signature);
+
+        alert("✅ NFT erfolgreich unstaked!");
+        console.log("[DEBUG] NFT erfolgreich unstaked:", signature);
+
+        await loadVaultNFTs();
+
+    } catch (error) {
+        console.error("[DEBUG] Fehler beim Unstaking:", error);
+        alert("Fehler beim Unstaking. Siehe Konsole.");
+    }
+}
+
         );
 
         transaction.feePayer = wallet;
