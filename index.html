@@ -130,9 +130,9 @@
       ];
 
       const instruction = new solanaWeb3.TransactionInstruction({
-        keys,
-        programId: tokenProgramId,
-        data: Buffer.from([3, 1, 0, 0, 0, 0, 0, 0, 0])
+      keys,
+      programId: tokenProgramId,
+      data: Uint8Array.from([3, 1, 0, 0, 0, 0, 0, 0, 0])
       });
 
       const transaction = new solanaWeb3.Transaction().add(instruction);
