@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drakos Unstaked - FINAL</title>
+  <title>Drakos Unstaked - Web3 Only</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,8 +20,6 @@
 
 <!-- Solana Web3.js -->
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-<!-- Richtige SPL Token Version für Browser -->
-<script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.3.5/dist/index.iife.min.js"></script>
 
 <script>
   console.log("[DEBUG] Vault Unstake Script loaded");
@@ -101,31 +99,43 @@
       const mintPublicKey = new solanaWeb3.PublicKey(mintAddress);
       const vaultPublicKey = new solanaWeb3.PublicKey(VAULT_ADDRESS);
 
-      const sourceTokenAccount = await splToken.getAssociatedTokenAddress(
-        mintPublicKey,
-        vaultPublicKey,
-        true
+      const associatedTokenProgramId = new solanaWeb3.PublicKey("ATokenGPvbdGVxr1ZpzZbNwG9wL6b9WzfrWkbsAU6Y7");
+      const tokenProgramId = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+
+      const [sourceTokenAccount] = await solanaWeb3.PublicKey.findProgramAddress(
+        [
+          vaultPublicKey.toBuffer(),
+          tokenProgramId.toBuffer(),
+          mintPublicKey.toBuffer()
+        ],
+        associatedTokenProgramId
       );
 
-      const destinationTokenAccount = await splToken.getAssociatedTokenAddress(
-        mintPublicKey,
-        wallet
+      const [destinationTokenAccount] = await solanaWeb3.PublicKey.findProgramAddress(
+        [
+          wallet.toBuffer(),
+          tokenProgramId.toBuffer(),
+          mintPublicKey.toBuffer()
+        ],
+        associatedTokenProgramId
       );
 
       console.log("[DEBUG] Source Account:", sourceTokenAccount.toBase58());
       console.log("[DEBUG] Destination Account:", destinationTokenAccount.toBase58());
 
-      const transaction = new solanaWeb3.Transaction().add(
-        splToken.createTransferInstruction(
-          sourceTokenAccount,
-          destinationTokenAccount,
-          vaultPublicKey,
-          1,
-          [],
-          splToken.TOKEN_PROGRAM_ID
-        )
-      );
+      const keys = [
+        { pubkey: sourceTokenAccount, isSigner: false, isWritable: true },
+        { pubkey: destinationTokenAccount, isSigner: false, isWritable: true },
+        { pubkey: vaultPublicKey, isSigner: true, isWritable: false }
+      ];
 
+      const instruction = new solanaWeb3.TransactionInstruction({
+        keys,
+        programId: tokenProgramId,
+        data: Buffer.from([3, 1, 0, 0, 0, 0, 0, 0, 0])
+      });
+
+      const transaction = new solanaWeb3.Transaction().add(instruction);
       transaction.feePayer = wallet;
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
